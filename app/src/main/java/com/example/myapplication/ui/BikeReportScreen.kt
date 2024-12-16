@@ -19,8 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -42,11 +42,14 @@ fun BikeReportScreen(
     bikeViewModel: BikeViewModel,
     context: Context, // Pass the context
 ) {
-
-    val isFilterApplied by bikeViewModel.isFilterApplied.observeAsState(false)
-    val selectedBike by bikeViewModel.selectedBike.observeAsState()
-
-    val bikes by bikeViewModel.bikeLocations.observeAsState(initial = emptyList())
+ //********Use LiveData to define state variables
+//    val isFilterApplied by bikeViewModel.isFilterApplied.observeAsState(false)
+//    val selectedBike by bikeViewModel.selectedBike.observeAsState()
+//    val bikes by bikeViewModel.bikeLocations.observeAsState(initial = emptyList())
+// *********Use StateFlow to define state variables
+    val bikes by bikeViewModel.bikeLocations.collectAsState()
+    val isFilterApplied by bikeViewModel.isFilterApplied.collectAsState()
+    val selectedBike by bikeViewModel.selectedBike.collectAsState()
 
     val onBikeReturned: (Bike) -> Unit = { updatedBike ->
         bikeViewModel.updateBikeReturnStatus(updatedBike)

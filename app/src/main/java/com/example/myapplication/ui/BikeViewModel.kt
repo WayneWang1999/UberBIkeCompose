@@ -3,33 +3,51 @@ package com.example.myapplication.ui
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.data.Bike
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class BikeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    private val _bikeLocations = MutableLiveData<List<Bike>>()
-    val bikeLocations: LiveData<List<Bike>> get() = _bikeLocations
+    //***************Use LiveDta to define properties
+//    private val _bikeLocations = MutableLiveData<List<Bike>>()
+//    val bikeLocations: LiveData<List<Bike>> get() = _bikeLocations
+//
+//    private val _errorMessage = MutableLiveData<String>()
+//    val errorMessage: LiveData<String> get() = _errorMessage
+//
+//    //move the state variables from the screen
+//
+//    private val _isFilterApplied = MutableLiveData(false)
+//    val isFilterApplied: LiveData<Boolean> get() = _isFilterApplied
+//
+//    private val _selectedBike = MutableLiveData<Bike?>()
+//    val selectedBike: LiveData<Bike?> get() = _selectedBike
 
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String> get() = _errorMessage
+    // Use StateFlow  to define properties
+    private val _bikeLocations = MutableStateFlow<List<Bike>>(emptyList())
+    val bikeLocations: StateFlow<List<Bike>> get() = _bikeLocations.asStateFlow()
 
-    //move the state variables from the screen
+    private val _isFilterApplied = MutableStateFlow(false)
+    val isFilterApplied: StateFlow<Boolean> get() = _isFilterApplied.asStateFlow()
 
-    private val _isFilterApplied = MutableLiveData(false)
-    val isFilterApplied: LiveData<Boolean> get() = _isFilterApplied
+    private val _selectedBike = MutableStateFlow<Bike?>(null)
+    val selectedBike: StateFlow<Bike?> get() = _selectedBike.asStateFlow()
 
-    private val _selectedBike = MutableLiveData<Bike?>()
-    val selectedBike: LiveData<Bike?> get() = _selectedBike
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> get() = _errorMessage.asStateFlow()
 
     init {
-        // Initially, fetch "false" bikes (empty state or placeholder bikes)
         fetchBikeLocations(false)
     }
+
     fun setFilterApplied(isApplied: Boolean) {
         _isFilterApplied.value = isApplied
         fetchBikeLocations(isApplied)
@@ -40,80 +58,64 @@ class BikeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateBikeReturnStatus(updatedBike: Bike) {
-        val db = FirebaseFirestore.getInstance()
-
-        // Log the bikeName for debugging
-        Log.d("BikeViewModel", "Bike Name: ${updatedBike.bikeName}   ${updatedBike.isReturned}")
-
-        // Search for the bike document by bikeName//
-        //********************************************************//
-        db.collection("bikes")
-            .whereEqualTo("bikeName", updatedBike.bikeName) // Find bike by bikeName
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                // Check if we found the bike
-                if (!querySnapshot.isEmpty) {
-                    // Assuming bikeName is unique, we get the first matching document
-                    val bikeDocument = querySnapshot.documents[0]
-                    val bikeId = bikeDocument.id // Get the document ID
-                    Log.d("BikeViewModel", "bikeId: ${bikeId}  ")
-
-                    // Now update the bike's returned status
-                    db.collection("bikes")
-                        .document(bikeId) // Use the document ID for the update
-                        .update("returned", updatedBike.isReturned)
-                        .addOnSuccessListener {
-                            Log.d("BikeViewModel", "Bike return status updated successfully")
-                            fetchBikeLocations(false)
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.e("BikeViewModel", "Error updating bike return status: $exception")
-                        }
-                } else {
-                    Log.e("BikeViewModel", "No bike found with the name: ${updatedBike.bikeName}")
+        //Use stateflow add CoroutineScope to launch function.
+        CoroutineScope(Dispatchers.IO).launch {
+            firestore.collection("bikes")
+                .whereEqualTo("bikeName", updatedBike.bikeName)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    if (!querySnapshot.isEmpty) {
+                        val bikeDocument = querySnapshot.documents[0]
+                        val bikeId = bikeDocument.id
+                        firestore.collection("bikes")
+                            .document(bikeId)
+                            .update("returned", updatedBike.isReturned)
+                            .addOnSuccessListener {
+                                fetchBikeLocations(false)
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("BikeViewModel", "Error updating bike return status: $exception")
+                            }
+                    } else {
+                        Log.e("BikeViewModel", "No bike found with the name: ${updatedBike.bikeName}")
+                    }
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.e("BikeViewModel", "Error fetching bike by name: $exception")
-            }
+                .addOnFailureListener { exception ->
+                    Log.e("BikeViewModel", "Error fetching bike by name: $exception")
+                }
+        }
     }
-
-
 
     fun fetchBikeLocations(showReturnedOnly: Boolean?) {
-        firestore.collection("bikes")
-            .get()
-            .addOnSuccessListener { documents ->
-                val bikes = mutableListOf<Bike>()
+        CoroutineScope(Dispatchers.IO).launch {
+            firestore.collection("bikes")
+                .get()
+                .addOnSuccessListener { documents ->
+                    val bikes = mutableListOf<Bike>()
+                    for (document in documents) {
+                        val latitude = document.getDouble("latitude") ?: continue
+                        val longitude = document.getDouble("longitude") ?: continue
+                        val isReturned = document.getBoolean("returned") ?: false
+                        val address = document.getString("address") ?: ""
+                        val name = document.getString("bikeName") ?: "BIKE"
 
-                for (document in documents) {
-                    val latitude = document.getDouble("latitude") ?: continue
-                    val longitude = document.getDouble("longitude") ?: continue
-                    val isReturned = document.getBoolean("returned") ?: false
-                    val address = document.getString("address") ?: ""
-                    val name = document.getString("bikeName") ?: "BIKE"
+                        if (showReturnedOnly != null && isReturned != showReturnedOnly) continue
 
-                    // Apply filter logic only if showReturnedOnly is not null
-                    if (showReturnedOnly != null) {
-                        if (isReturned != showReturnedOnly) continue
+                        bikes.add(
+                            Bike(
+                                latitude = latitude,
+                                longitude = longitude,
+                                isReturned = isReturned,
+                                address = address,
+                                bikeName = name
+                            )
+                        )
                     }
-
-                    bikes.add(
-                        Bike(
-                        latitude = latitude,
-                        longitude = longitude,
-                        isReturned = isReturned,
-                        address = address,
-                        bikeName = name
-                    )
-                    )
+                    _bikeLocations.value = bikes
                 }
-
-                _bikeLocations.postValue(bikes)
-            }
-            .addOnFailureListener { exception ->
-                _errorMessage.postValue("Failed to load bike locations: ${exception.message}")
-            }
+                .addOnFailureListener { exception ->
+                    _errorMessage.value = "Failed to load bike locations: ${exception.message}"
+                }
+        }
     }
-
 }

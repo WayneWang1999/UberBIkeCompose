@@ -74,4 +74,6 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("com.google.android.gms:play-services-maps:18.1.0") // Added dependency
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
