@@ -29,7 +29,8 @@ class BikeViewModel(application: Application) : AndroidViewModel(application) {
         // Log the bikeName for debugging
         Log.d("BikeViewModel", "Bike Name: ${updatedBike.bikeName}   ${updatedBike.isReturned}")
 
-        // Search for the bike document by bikeName
+        // Search for the bike document by bikeName//
+        //********************************************************//
         db.collection("bikes")
             .whereEqualTo("bikeName", updatedBike.bikeName) // Find bike by bikeName
             .get()

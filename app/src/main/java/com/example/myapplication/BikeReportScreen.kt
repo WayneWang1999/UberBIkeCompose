@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -43,7 +44,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun BikeReportScreen(
     bikeViewModel: BikeViewModel,
     context: Context, // Pass the context
-    onGenerateRandomBike: () -> Unit
 ) {
     var isFilterApplied by remember { mutableStateOf(false) }
     var selectedBike by remember { mutableStateOf<Bike?>(null) }
@@ -59,35 +59,53 @@ fun BikeReportScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(12.dp)
             .background(MaterialTheme.colorScheme.background)
     ) {
         // Header Section
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(4.dp) // Add shadow for elevation effect
+                .shadow(8.dp) // Add shadow for elevation effect
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 2.dp,
+                        bottom = 2.dp
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "Bike Report",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(8.dp) // Rounded corners
+                        )
+                        .padding(vertical = 8.dp, horizontal = 16.dp) // Padding inside the button
+                        .clickable {
+                            // Call the function to generate and upload a random bike
+                            val bikeDataInputs = BikeDataInputs(context)
+                            bikeDataInputs.generateRandomBikeAndUpload()
+                            // After inserting the bike, refresh the bike list in the ViewModel
+                            bikeViewModel.fetchBikeLocations(false)
+                        }
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Find",
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 16.sp
+                        fontSize = 20.sp
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
                     Switch(
                         checked = isFilterApplied,
                         onCheckedChange = {
@@ -95,11 +113,11 @@ fun BikeReportScreen(
                             bikeViewModel.fetchBikeLocations(it)
                         }
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
                     Text(
                         text = "Home",
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 16.sp
+                        fontSize = 20.sp
                     )
                 }
             }
@@ -145,21 +163,6 @@ fun BikeReportScreen(
                 onDismiss = { selectedBike = null },
                 onBikeReturned = onBikeReturned // Pass the function to the dialog
             )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Generate Random Bike Button
-        Button(
-            onClick = {
-                // Call the function to generate and upload a random bike
-                val bikeDataInputs = BikeDataInputs(context)
-                bikeDataInputs.generateRandomBikeAndUpload()
-                // After inserting the bike, refresh the bike list in the ViewModel
-                bikeViewModel.fetchBikeLocations(false)
-            },
-        ) {
-            Text(text = "Generate Random Bike")
         }
     }
 }

@@ -4,7 +4,6 @@ package com.example.myapplication
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -30,10 +29,6 @@ class MainActivity : ComponentActivity() {
                 BikeReportScreen(
                     bikeViewModel = bikeViewModel,
                     context = this, // Pass the context
-                    onGenerateRandomBike = {
-                        // Your function to generate random bikes
-                        Toast.makeText(this, "Random Bike Generated", Toast.LENGTH_SHORT).show()
-                    }
                 )
             }
         }
