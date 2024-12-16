@@ -100,44 +100,4 @@ class BikeViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
-    fun startRealTimeListener(showReturnedOnly: Boolean?) {
-        firestore.collection("bikes")
-            .addSnapshotListener { snapshots, error ->
-                if (error != null) {
-                    _errorMessage.postValue("Failed to listen for bike updates: ${error.message}")
-                    return@addSnapshotListener
-                }
-
-                if (snapshots == null || snapshots.isEmpty) {
-                    _errorMessage.postValue("No bike locations found.")
-                    return@addSnapshotListener
-                }
-
-                val bikes = mutableListOf<Bike>()
-                for (document in snapshots) {
-                    val latitude = document.getDouble("latitude") ?: continue
-                    val longitude = document.getDouble("longitude") ?: continue
-                    val isReturned = document.getBoolean("returned") ?: false
-                    val address = document.getString("address") ?: ""
-                    val name = document.getString("bikeName") ?: "BIKE"
-
-                    // Apply filter logic only if showReturnedOnly is not null
-                    if (showReturnedOnly != null) {
-                        if (isReturned != showReturnedOnly) continue
-                    }
-
-                    bikes.add(
-                        Bike(
-                        latitude = latitude,
-                        longitude = longitude,
-                        isReturned = isReturned,
-                        address = address,
-                        bikeName = name
-                    )
-                    )
-                }
-
-                _bikeLocations.postValue(bikes)
-            }
-    }
 }
