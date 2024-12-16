@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.Bike
 import com.example.myapplication.util.BikeDataInputs
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -39,21 +38,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun BikeReportScreen(
-    bikeViewModel: BikeViewModel,
+    bikeReportViewModel: BikeReportViewModel,
     context: Context, // Pass the context
 ) {
- //********Use LiveData to define state variables
-//    val isFilterApplied by bikeViewModel.isFilterApplied.observeAsState(false)
-//    val selectedBike by bikeViewModel.selectedBike.observeAsState()
-//    val bikes by bikeViewModel.bikeLocations.observeAsState(initial = emptyList())
 // *********Use StateFlow to define state variables
-    val bikes by bikeViewModel.bikeLocations.collectAsState()
-    val isFilterApplied by bikeViewModel.isFilterApplied.collectAsState()
-    val selectedBike by bikeViewModel.selectedBike.collectAsState()
-
-    val onBikeReturned: (Bike) -> Unit = { updatedBike ->
-        bikeViewModel.updateBikeReturnStatus(updatedBike)
-    }
+    val bikes by bikeReportViewModel.bikeLocations.collectAsState()
+    val isFilterApplied by bikeReportViewModel.isFilterApplied.collectAsState()
+    val selectedBike by bikeReportViewModel.selectedBike.collectAsState()
 
     Column(
         modifier = Modifier
@@ -95,7 +86,7 @@ fun BikeReportScreen(
                             val bikeDataInputs = BikeDataInputs(context)
                             bikeDataInputs.generateRandomBikeAndUpload()
                             // After inserting the bike, refresh the bike list in the ViewModel
-                            bikeViewModel.fetchBikeLocations(false)
+                            bikeReportViewModel.fetchBikeLocations(false)
                         }
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -108,9 +99,7 @@ fun BikeReportScreen(
                     Switch(
                         checked = isFilterApplied,
                         onCheckedChange = {
-                            bikeViewModel.setFilterApplied(it)
-//                            isFilterApplied = it
-//                            bikeViewModel.fetchBikeLocations(it)
+                            bikeReportViewModel.setFilterApplied(it)
                         }
                     )
                     Spacer(modifier = Modifier.width(2.dp))
@@ -148,8 +137,7 @@ fun BikeReportScreen(
                         title = bike.bikeName,
                         snippet = bike.address,
                         onClick = {
-                            bikeViewModel.setSelectedBike(bike)
-                         //   selectedBike = bike
+                            bikeReportViewModel.setSelectedBike(bike)
                             true // Return true to indicate that the click was handled
                         }
                     )
@@ -161,8 +149,7 @@ fun BikeReportScreen(
         selectedBike?.let { bike ->
             BikeDetailsDialog(
                 bike = bike,
-                onDismiss = { bikeViewModel.setSelectedBike(null) },
-                onBikeReturned = onBikeReturned // Pass the function to the dialog
+                onDismiss = { bikeReportViewModel.setSelectedBike(null) }
             )
         }
     }

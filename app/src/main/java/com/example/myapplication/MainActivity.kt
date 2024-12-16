@@ -10,13 +10,13 @@ import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.example.myapplication.data.BikeViewModelFactory
 import com.example.myapplication.ui.BikeReportScreen
-import com.example.myapplication.ui.BikeViewModel
+import com.example.myapplication.ui.BikeReportViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.google.firebase.FirebaseApp
 
 
 class MainActivity : ComponentActivity() {
-    private val bikeViewModel: BikeViewModel by viewModels {
+    private val bikeReportViewModel: BikeReportViewModel by viewModels {
         BikeViewModelFactory(application)
     }
 
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 BikeReportScreen(
-                    bikeViewModel = bikeViewModel,
+                    bikeReportViewModel = bikeReportViewModel,
                     context = this, // Pass the context
                 )
             }
