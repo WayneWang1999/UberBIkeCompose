@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

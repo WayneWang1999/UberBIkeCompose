@@ -8,6 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import com.example.myapplication.data.BikeViewModelFactory
+import com.example.myapplication.ui.BikeReportScreen
+import com.example.myapplication.ui.BikeViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.google.firebase.FirebaseApp
 
