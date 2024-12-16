@@ -18,9 +18,25 @@ class BikeViewModel(application: Application) : AndroidViewModel(application) {
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
 
+    //move the state variables from the screen
+
+    private val _isFilterApplied = MutableLiveData(false)
+    val isFilterApplied: LiveData<Boolean> get() = _isFilterApplied
+
+    private val _selectedBike = MutableLiveData<Bike?>()
+    val selectedBike: LiveData<Bike?> get() = _selectedBike
+
     init {
         // Initially, fetch "false" bikes (empty state or placeholder bikes)
         fetchBikeLocations(false)
+    }
+    fun setFilterApplied(isApplied: Boolean) {
+        _isFilterApplied.value = isApplied
+        fetchBikeLocations(isApplied)
+    }
+
+    fun setSelectedBike(bike: Bike?) {
+        _selectedBike.value = bike
     }
 
     fun updateBikeReturnStatus(updatedBike: Bike) {

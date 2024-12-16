@@ -21,9 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -45,14 +42,13 @@ fun BikeReportScreen(
     bikeViewModel: BikeViewModel,
     context: Context, // Pass the context
 ) {
-    var isFilterApplied by remember { mutableStateOf(false) }
-    var selectedBike by remember { mutableStateOf<Bike?>(null) }
+
+    val isFilterApplied by bikeViewModel.isFilterApplied.observeAsState(false)
+    val selectedBike by bikeViewModel.selectedBike.observeAsState()
 
     val bikes by bikeViewModel.bikeLocations.observeAsState(initial = emptyList())
 
-    // Handle bike returned event
     val onBikeReturned: (Bike) -> Unit = { updatedBike ->
-        // Pass the updated bike to the ViewModel or database
         bikeViewModel.updateBikeReturnStatus(updatedBike)
     }
 
@@ -109,8 +105,9 @@ fun BikeReportScreen(
                     Switch(
                         checked = isFilterApplied,
                         onCheckedChange = {
-                            isFilterApplied = it
-                            bikeViewModel.fetchBikeLocations(it)
+                            bikeViewModel.setFilterApplied(it)
+//                            isFilterApplied = it
+//                            bikeViewModel.fetchBikeLocations(it)
                         }
                     )
                     Spacer(modifier = Modifier.width(2.dp))
@@ -148,7 +145,8 @@ fun BikeReportScreen(
                         title = bike.bikeName,
                         snippet = bike.address,
                         onClick = {
-                            selectedBike = bike
+                            bikeViewModel.setSelectedBike(bike)
+                         //   selectedBike = bike
                             true // Return true to indicate that the click was handled
                         }
                     )
@@ -160,7 +158,7 @@ fun BikeReportScreen(
         selectedBike?.let { bike ->
             BikeDetailsDialog(
                 bike = bike,
-                onDismiss = { selectedBike = null },
+                onDismiss = { bikeViewModel.setSelectedBike(null) },
                 onBikeReturned = onBikeReturned // Pass the function to the dialog
             )
         }
