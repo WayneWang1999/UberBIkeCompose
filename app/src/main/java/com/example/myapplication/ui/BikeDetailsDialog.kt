@@ -4,22 +4,39 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.Bike
+import com.example.myapplication.data.BikeDetailsViewModelFactory
 
 @Composable
-fun BikeDetailsDialog(bike: Bike, onDismiss: () -> Unit, onBikeReturned: (Bike) -> Unit) {
+fun BikeDetailsDialog(
+    bike: Bike,
+    onDismiss: () -> Unit,
+    bikeDetailsViewModel: BikeDetailsViewModel = viewModel(
+        factory = BikeDetailsViewModelFactory(bikeReportViewModel = viewModel())
+    ) // Passing BikeViewModel
+) {
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = { Text(text = bike.bikeName ?: "Unknown Bike") },
-        text = { Text(text = bike.address ?: "No address available.") },
+        text = {
+            Text(
+                text = bike.address ?: "No address available.",
+            )
+        },
         confirmButton = {
-            TextButton(onClick = {
-                // Update the bike's 'returned' status and trigger the callback
-                val updatedBike = bike.copy(isReturned = true) // Assuming 'returned' is a Boolean field in the Bike object
-                onBikeReturned(updatedBike) // Update the bike state via the callback
-                onDismiss() // Close the dialog
-            }) {
+            TextButton(
+                onClick = {
+                    bikeDetailsViewModel.updateBikeReturned(bike) // FireStore update via ViewModel
+                    onDismiss() // Dismiss the dialog
+                },
+            ) {
                 Text(text = "Return Bike")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text(text = "Cancel")
             }
         }
     )

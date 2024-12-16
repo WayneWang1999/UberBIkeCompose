@@ -1,7 +1,5 @@
 package com.example.myapplication.util
 
-
-
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
@@ -49,29 +47,6 @@ class BikeDataInputs (private val context: Context){
             .addOnFailureListener { e ->
                 // Failure callback
                 Log.e("BikeViewModel", "Batch write failed: $e")
-            }
-    }
-
-    fun deleteAllBikes() {
-        val bikesCollection = db.collection("bikes")
-
-        bikesCollection.get()
-            .addOnSuccessListener { querySnapshot ->
-                val batch = db.batch()
-                for (document in querySnapshot.documents) {
-                    batch.delete(document.reference)
-                }
-                // Commit the batch
-                batch.commit()
-                    .addOnSuccessListener {
-                        println("Successfully deleted all bikes.")
-                    }
-                    .addOnFailureListener { e ->
-                        println("Error deleting houses: ${e.message}")
-                    }
-            }
-            .addOnFailureListener { e ->
-                println("Error fetching documents: ${e.message}")
             }
     }
 
