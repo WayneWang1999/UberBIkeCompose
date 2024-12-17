@@ -8,7 +8,9 @@ import com.example.myapplication.data.Bike
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.random.Random
 
-class BikeDataInputs (private val context: Context){
+class BikeDataInputs (
+    private val context: Context
+){
     private val db = FirebaseFirestore.getInstance()
     fun generateRandomBikeAndUpload() {
         val batch = db.batch() // Use batch writes for efficiency

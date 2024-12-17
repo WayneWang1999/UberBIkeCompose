@@ -1,8 +1,10 @@
 package com.example.myapplication.ui
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import com.example.myapplication.data.Bike
+import com.example.myapplication.util.BikeDataInputs
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +42,7 @@ class BikeReportViewModel(application: Application) : AndroidViewModel(applicati
         _selectedBike.value = bike
     }
 
-    fun fetchBikeLocations(showReturnedOnly: Boolean?) {
+    fun fetchBikeLocations(showReturnedOnly: Boolean=false) {
         CoroutineScope(Dispatchers.IO).launch {
             firestore.collection("bikes")
                 .get()
@@ -71,5 +73,11 @@ class BikeReportViewModel(application: Application) : AndroidViewModel(applicati
                     _errorMessage.value = "Failed to load bike locations: ${exception.message}"
                 }
         }
+    }
+
+    fun generateAndUploadBike(context: Context) {
+        val bikeDataInputs = BikeDataInputs(context)
+        bikeDataInputs.generateRandomBikeAndUpload()
+        fetchBikeLocations(false)
     }
 }

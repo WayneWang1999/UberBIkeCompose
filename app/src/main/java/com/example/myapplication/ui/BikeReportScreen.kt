@@ -27,7 +27,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.util.BikeDataInputs
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.data.BikeDetailsViewModelFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -45,6 +46,8 @@ fun BikeReportScreen(
     val bikes by bikeReportViewModel.bikeLocations.collectAsState()
     val isFilterApplied by bikeReportViewModel.isFilterApplied.collectAsState()
     val selectedBike by bikeReportViewModel.selectedBike.collectAsState()
+
+
 
     Column(
         modifier = Modifier
@@ -83,10 +86,7 @@ fun BikeReportScreen(
                         .padding(vertical = 8.dp, horizontal = 16.dp) // Padding inside the button
                         .clickable {
                             // Call the function to generate and upload a random bike
-                            val bikeDataInputs = BikeDataInputs(context)
-                            bikeDataInputs.generateRandomBikeAndUpload()
-                            // After inserting the bike, refresh the bike list in the ViewModel
-                            bikeReportViewModel.fetchBikeLocations(false)
+                            bikeReportViewModel.generateAndUploadBike(context)
                         }
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -149,7 +149,10 @@ fun BikeReportScreen(
         selectedBike?.let { bike ->
             BikeDetailsDialog(
                 bike = bike,
-                onDismiss = { bikeReportViewModel.setSelectedBike(null) }
+                onDismiss = { bikeReportViewModel.setSelectedBike(null) },
+                bikeDetailsViewModel = viewModel(
+                    factory = BikeDetailsViewModelFactory(bikeReportViewModel)
+                )
             )
         }
     }
