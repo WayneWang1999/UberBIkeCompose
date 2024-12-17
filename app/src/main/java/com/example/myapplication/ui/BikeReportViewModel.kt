@@ -3,10 +3,10 @@ package com.example.myapplication.ui
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.Bike
 import com.example.myapplication.util.BikeDataInputs
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,8 +42,8 @@ class BikeReportViewModel(application: Application) : AndroidViewModel(applicati
         _selectedBike.value = bike
     }
 
-    fun fetchBikeLocations(showReturnedOnly: Boolean=false) {
-        CoroutineScope(Dispatchers.IO).launch {
+    fun fetchBikeLocations(showReturnedOnly: Boolean = false) {
+        viewModelScope.launch(Dispatchers.IO) {
             firestore.collection("bikes")
                 .get()
                 .addOnSuccessListener { documents ->
@@ -55,7 +55,7 @@ class BikeReportViewModel(application: Application) : AndroidViewModel(applicati
                         val address = document.getString("address") ?: ""
                         val name = document.getString("bikeName") ?: "BIKE"
 
-                        if (showReturnedOnly != null && isReturned != showReturnedOnly) continue
+                        if (isReturned != showReturnedOnly) continue
 
                         bikes.add(
                             Bike(
